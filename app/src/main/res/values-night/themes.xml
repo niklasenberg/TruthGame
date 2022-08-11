@@ -1,0 +1,25 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.TruthGame" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/sandy_brown</item>
+        <item name="colorPrimaryVariant">@color/buff</item>
+        <item name="colorOnPrimary">@color/yellow_crayola</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/red_orange</item>
+        <item name="colorSecondaryVariant">@color/sinopia</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Theme.TruthGame.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.TruthGame.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.TruthGame.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+</resources>
