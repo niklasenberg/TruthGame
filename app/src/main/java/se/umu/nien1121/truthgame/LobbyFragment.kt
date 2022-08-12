@@ -151,9 +151,6 @@ class LobbyFragment : Fragment() {
     private inner class PlayerAdapter(var players: List<Player>) :
         RecyclerView.Adapter<PlayerHolder>() {
 
-        /**
-         * Returns
-         */
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerHolder {
             return PlayerHolder(layoutInflater.inflate(R.layout.list_item_player, parent, false))
         }
@@ -194,7 +191,7 @@ class LobbyFragment : Fragment() {
         fun bind(player: Player) {
             this.player = player
             nameTextView.text = this.player.name
-            pictureImageView.setImageBitmap(this.player.image)
+            setPicture(pictureImageView, this.player.imageUri, requireContext())
             playerScore.text = getString(R.string.score, player.score.toString())
             playerCard.setCardBackgroundColor(
                 ContextCompat.getColor(

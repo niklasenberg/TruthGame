@@ -1,6 +1,6 @@
 package se.umu.nien1121.truthgame
 
-import android.graphics.Bitmap
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 
@@ -40,41 +40,41 @@ class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
     /**
      * Primary method used for saving [Player] information.
      * @param playerIndex: position of [Player] in [playerList]. Is negative if non-existent.
-     * @param image: player's captured image to be saved
+     * @param imageUri: player's captured image to be saved
      * @param name: name of player to be saved
      * @param favouriteColor: player's favorite colour to be saved
      */
-    fun savePlayer(playerIndex: Int, image: Bitmap, name: String, favouriteColor: Int) {
+    fun savePlayer(playerIndex: Int, imageUri: Uri, name: String, favouriteColor: Int) {
         if (playerIndex >= 0) {
             //If player exists, update it
-            updatePlayer(playerIndex, image, name, favouriteColor)
+            updatePlayer(playerIndex, imageUri, name, favouriteColor)
         } else {
             //Else add new player object
-            addPlayer(image, name, favouriteColor)
+            addPlayer(imageUri, name, favouriteColor)
         }
     }
 
     /**
      * Helper method for adding a new [Player] to [playerList]. Called by [savePlayer].
-     * @param image: new player's captured image
+     * @param imageUri: new player's captured image
      * @param name: name of new player
      * @param favouriteColor: new player's favorite colour
      */
-    private fun addPlayer(image: Bitmap, name: String, favouriteColor: Int) {
-        val player = Player(image = image, name = name, favouriteColor = favouriteColor)
+    private fun addPlayer(imageUri: Uri, name: String, favouriteColor: Int) {
+        val player = Player(imageUri = imageUri, name = name, favouriteColor = favouriteColor)
         playerList.add(player)
     }
 
     /**
      * Helper method for updating a [Player] already in [playerList]. Called by [savePlayer].
      * @param playerIndex: position of [Player] in [playerList].
-     * @param image: player's captured image to be saved
+     * @param imageUri: player's captured image to be saved
      * @param name: name of player to be saved
      * @param favouriteColor: player's favorite colour to be saved
      */
-    private fun updatePlayer(playerIndex: Int, image: Bitmap, name: String, favouriteColor: Int) {
+    private fun updatePlayer(playerIndex: Int, imageUri: Uri, name: String, favouriteColor: Int) {
         val player = playerList[playerIndex]
-        player.image = image
+        player.imageUri = imageUri
         player.name = name
         player.favouriteColor = favouriteColor
     }
@@ -84,8 +84,8 @@ class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
         return playerList
     }
 
-    fun getPlayerImage(i: Int): Bitmap {
-        return playerList[i].image
+    fun getPlayerImage(i: Int): Uri {
+        return playerList[i].imageUri
     }
 
     fun getPlayerName(i: Int): String {

@@ -1,18 +1,30 @@
 package se.umu.nien1121.truthgame
 
+import android.app.Activity.RESULT_OK
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.*
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.drawable.toBitmap
+import androidx.core.content.FileProvider
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import se.umu.nien1121.truthgame.databinding.FragmentPlayerDetailsBinding
+import java.io.File
+import java.text.DateFormat.getDateInstance
 
 //Constants
+private const val LOG = "PlayerDetailsFragment"
 private const val PLAYER_INDEX = "se.umu.nien1121.playerIndex"
+private const val IMAGE_URI = "se.umu.nien1121.imageUri"
 
 class PlayerDetailsFragment : Fragment() {
 
@@ -27,11 +39,20 @@ class PlayerDetailsFragment : Fragment() {
     private var playerIndex = -1
 
     //Input validation
+    private lateinit var photoUri: Uri
     private var hasPhoto = false
 
     //ViewBinding
     private var _binding: FragmentPlayerDetailsBinding? = null
     private val binding get() = _binding!!
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            photoUri = savedInstanceState.getParcelable(IMAGE_URI)!!
+            hasPhoto = true
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,7 +81,8 @@ class PlayerDetailsFragment : Fragment() {
      */
     private fun getPlayerDetails(playerIndex: Int) {
         //Get picture
-        binding.imageviewPlayer.setImageBitmap(gameModel.getPlayerImage(playerIndex))
+        photoUri = gameModel.getPlayerImage(playerIndex)
+        setPicture(binding.imageviewPlayer, photoUri, requireContext())
         hasPhoto = true
 
         //Get name
@@ -84,9 +106,32 @@ class PlayerDetailsFragment : Fragment() {
      */
     private fun setViews() {
         binding.imageviewPlayer.apply {
-            //TODO: get camera photo
+            if (!hasPhoto) {
+                val photoFile = File.createTempFile(
+                    "JPEG_" + getDateInstance(),
+                    ".jpg",
+                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+                )
+                photoUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    requireContext().packageName + ".fileprovider",
+                    photoFile
+                )
+            }
+            val packageManager: PackageManager = requireActivity().packageManager
+            val captureImageIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(
+                captureImageIntent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            )
+
+            if (resolvedActivity == null) {
+                isEnabled = true
+            }
+
             setOnClickListener {
-                hasPhoto = true
+                captureImageIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                photoLauncher.launch(captureImageIntent)
             }
         }
 
@@ -98,6 +143,16 @@ class PlayerDetailsFragment : Fragment() {
             savePlayer()
         }
     }
+
+    private val photoLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            when {
+                it.resultCode != RESULT_OK -> print("Something went wrong")
+                it.data != null -> {
+                    setPicture(binding.imageviewPlayer, photoUri, requireContext())
+                }
+            }
+        }
 
     /**
      * Helper method for input validating and saving/updating [Player] details.
@@ -122,7 +177,7 @@ class PlayerDetailsFragment : Fragment() {
             //Save player via ViewModel
             gameModel.savePlayer(
                 playerIndex,
-                binding.imageviewPlayer.drawable.toBitmap(),
+                photoUri,
                 binding.textInputLayoutName.editText!!.text.toString(),
                 color
             )
@@ -160,6 +215,11 @@ class PlayerDetailsFragment : Fragment() {
                 return true
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(IMAGE_URI, photoUri)
     }
 
     companion object {

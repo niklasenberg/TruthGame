@@ -1,6 +1,6 @@
 package se.umu.nien1121.truthgame
 
-import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 
@@ -9,21 +9,20 @@ import android.os.Parcelable
  * Implements [Parcelable] in order to persist through [GameViewModel.saveState].
  */
 data class Player(
-    var image: Bitmap,
+    var imageUri: Uri,
     var name: String,
     var favouriteColor: Int,
     var score: Int = 0
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readParcelable(Bitmap::class.java.classLoader)!!,
+        parcel.readParcelable(Uri::class.java.classLoader)!!,
         parcel.readString()!!,
         parcel.readInt(),
         parcel.readInt()
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelable(image, flags)
+        parcel.writeParcelable(imageUri, flags)
         parcel.writeString(name)
         parcel.writeInt(favouriteColor)
         parcel.writeInt(score)
@@ -42,4 +41,5 @@ data class Player(
             return arrayOfNulls(size)
         }
     }
+
 }
