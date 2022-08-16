@@ -1,4 +1,4 @@
-package se.umu.nien1121.truthgame
+package se.umu.nien1121.truthgame.controller
 
 import android.app.Activity.RESULT_OK
 import android.content.Intent
@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,12 +18,17 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import se.umu.nien1121.truthgame.R
 import se.umu.nien1121.truthgame.databinding.FragmentPlayerDetailsBinding
+import se.umu.nien1121.truthgame.hideKeyboard
+import se.umu.nien1121.truthgame.model.GameViewModel
+import se.umu.nien1121.truthgame.model.Player
+import se.umu.nien1121.truthgame.setPicture
 import java.io.File
 import java.text.DateFormat.getDateInstance
 
+
 //Constants
-private const val LOG = "PlayerDetailsFragment"
 private const val PLAYER_INDEX = "se.umu.nien1121.playerIndex"
 private const val IMAGE_URI = "se.umu.nien1121.imageUri"
 
@@ -34,11 +40,11 @@ class PlayerDetailsFragment : Fragment() {
     private val gameModel: GameViewModel by activityViewModels()
 
     /**
-     * Determines current [Player] object, or whether player does not exist
+     * Determines current [se.umu.nien1121.truthgame.model.Player] object, or whether player does not exist
      */
     private var playerIndex = -1
 
-    //Input validation
+    //Player photo and input validation
     private lateinit var photoUri: Uri
     private var hasPhoto = false
 
@@ -49,8 +55,20 @@ class PlayerDetailsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
+            Log.d("BUNDLE", "bundle exists")
             photoUri = savedInstanceState.getParcelable(IMAGE_URI)!!
-            hasPhoto = true
+        } else {
+            Log.d("BUNDLE", "does not exist")
+            val photoFile = File.createTempFile(
+                "JPEG_" + getDateInstance(),
+                ".jpg",
+                requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            )
+            photoUri = FileProvider.getUriForFile(
+                requireContext(),
+                requireContext().packageName + ".fileprovider",
+                photoFile
+            )
         }
     }
 
@@ -82,11 +100,13 @@ class PlayerDetailsFragment : Fragment() {
     private fun getPlayerDetails(playerIndex: Int) {
         //Get picture
         photoUri = gameModel.getPlayerImage(playerIndex)
-        setPicture(binding.imageviewPlayer, photoUri, requireContext())
-        hasPhoto = true
+        hasPhoto = setPicture(binding.imageviewPlayer, photoUri, requireContext())
 
         //Get name
-        binding.textInputLayoutName.editText!!.setText(gameModel.getPlayerName(playerIndex))
+        binding.textInputLayoutName.apply {
+            editText!!.setText(gameModel.getPlayerName(playerIndex))
+            jumpDrawablesToCurrentState()
+        }
 
         //Get color
         var colorButtonId = 0
@@ -95,7 +115,10 @@ class PlayerDetailsFragment : Fragment() {
             R.color.sandy_brown -> colorButtonId = R.id.radio_sandy_brown
             R.color.buff -> colorButtonId = R.id.radio_buff
         }
-        binding.radioGroupColor.check(colorButtonId)
+        binding.radioGroupColor.apply {
+            check(colorButtonId)
+            jumpDrawablesToCurrentState()
+        }
 
         //Modify button say "Update" instead of "Save"
         binding.buttonDone.text = getString(R.string.update_button)
@@ -106,18 +129,6 @@ class PlayerDetailsFragment : Fragment() {
      */
     private fun setViews() {
         binding.imageviewPlayer.apply {
-            if (!hasPhoto) {
-                val photoFile = File.createTempFile(
-                    "JPEG_" + getDateInstance(),
-                    ".jpg",
-                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-                )
-                photoUri = FileProvider.getUriForFile(
-                    requireContext(),
-                    requireContext().packageName + ".fileprovider",
-                    photoFile
-                )
-            }
             val packageManager: PackageManager = requireActivity().packageManager
             val captureImageIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(
@@ -135,10 +146,11 @@ class PlayerDetailsFragment : Fragment() {
             }
         }
 
-        //Default check
+        //Default check one of the radiobuttons
         binding.radioGroupColor.check(R.id.radio_yellow_crayola)
 
         binding.buttonDone.setOnClickListener {
+            //Force hide keyboard to not persist to LobbyFragment
             hideKeyboard()
             savePlayer()
         }
@@ -149,7 +161,7 @@ class PlayerDetailsFragment : Fragment() {
             when {
                 it.resultCode != RESULT_OK -> print("Something went wrong")
                 it.data != null -> {
-                    setPicture(binding.imageviewPlayer, photoUri, requireContext())
+                    hasPhoto = setPicture(binding.imageviewPlayer, photoUri, requireContext())
                 }
             }
         }
@@ -219,6 +231,7 @@ class PlayerDetailsFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        Log.d("BUNDLE", "onSaveInstanceState")
         outState.putParcelable(IMAGE_URI, photoUri)
     }
 

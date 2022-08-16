@@ -1,4 +1,4 @@
-package se.umu.nien1121.truthgame
+package se.umu.nien1121.truthgame.model
 
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 private const val PLAYER_LIST_KEY = "se.umu.nien1121.playerList"
 
 /**
- * Shared [ViewModel], owned by [MainActivity]. Handles registered [Player] objects.
+ * Shared [ViewModel], owned by [se.umu.nien1121.truthgame.MainActivity]. Handles registered [Player] objects.
  * @param handle: SavedStateHandle used by constructor to reset prior state upon destruction of ViewModel
  */
 class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {

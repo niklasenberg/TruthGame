@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    tools:context=".controller.WelcomeActivity">
+
+    <TextView
+        android:id="@+id/welcome_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="@string/welcome"
+        android:textSize="32sp" />
+
+    <FrameLayout
+        android:id="@+id/welcome_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/welcome_textView"
+        android:layout_above="@id/button_done"/>
+
+    <Button
+        android:id="@+id/button_done"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:backgroundTint="@android:color/holo_green_dark"
+        android:focusable="false"
+        android:text="@string/done"
+        android:textAlignment="center"
+        android:layout_alignParentBottom="true"
+        android:textColor="@android:color/white" />
+
+
+</RelativeLayout>

@@ -1,4 +1,4 @@
-package se.umu.nien1121.truthgame
+package se.umu.nien1121.truthgame.model
 
 import android.net.Uri
 import android.os.Parcel

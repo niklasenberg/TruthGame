@@ -1,6 +1,7 @@
-package se.umu.nien1121.truthgame
+package se.umu.nien1121.truthgame.controller
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -14,7 +15,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import se.umu.nien1121.truthgame.R
 import se.umu.nien1121.truthgame.databinding.FragmentLobbyBinding
+import se.umu.nien1121.truthgame.model.GameViewModel
+import se.umu.nien1121.truthgame.model.Player
+import se.umu.nien1121.truthgame.setPicture
 
 /**
  * [Fragment] displaying all registered players and their scores.
@@ -76,6 +81,10 @@ class LobbyFragment : Fragment() {
                     R.id.clear_lobby -> {
                         gameModel.clear()
                         updateUI(gameModel.getPlayers())
+                        true
+                    }
+                    R.id.add_question -> {
+
                         true
                     }
                     else -> true
