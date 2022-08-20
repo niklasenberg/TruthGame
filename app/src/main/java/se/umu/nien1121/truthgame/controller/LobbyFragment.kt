@@ -1,7 +1,6 @@
 package se.umu.nien1121.truthgame.controller
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -29,7 +28,7 @@ class LobbyFragment : Fragment() {
     /**
      * Shared ViewModel owned by [MainActivity]
      */
-    private val gameModel: GameViewModel by activityViewModels()
+    private val gameViewModel: GameViewModel by activityViewModels()
 
     //ViewBinding
     private var _binding: FragmentLobbyBinding? = null
@@ -55,15 +54,15 @@ class LobbyFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setSupportActionBar()
-        updateUI(gameModel.getPlayers())
+        setLobbyActionBar()
+        updateUI(gameViewModel.getPlayers())
         setListeners()
     }
 
     /**
-     * Helper method for configuring the ActionBar, setting the correct title and navigational options
+     * Custom helper method for configuring the ActionBar, setting the correct title, navigational options and menu items
      */
-    private fun setSupportActionBar() {
+    private fun setLobbyActionBar() {
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
                 // Clear current options, set title and add correct menu options
@@ -78,13 +77,28 @@ class LobbyFragment : Fragment() {
             override fun onMenuItemSelected(item: MenuItem): Boolean {
                 // Handle the menu selection
                 return when (item.itemId) {
-                    R.id.clear_lobby -> {
-                        gameModel.clear()
-                        updateUI(gameModel.getPlayers())
+                    R.id.my_questions -> {
+                        launchFragment(QuestionListFragment.newInstance())
                         true
                     }
-                    R.id.add_question -> {
-
+                    R.id.clear_lobby -> {
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("Clear lobby")
+                            .setMessage(
+                                "Are you sure you want to clear lobby?"
+                            )
+                            .setNegativeButton("No") { _, _ ->
+                                //Do nothing
+                            }
+                            .setPositiveButton("Yes") { _, _ ->
+                                gameViewModel.clear()
+                                updateUI(gameViewModel.getPlayers())
+                            }
+                            .show()
+                        true
+                    }
+                    R.id.show_rules -> {
+                        launchFragment(RulesFragment.newInstance())
                         true
                     }
                     else -> true
@@ -98,33 +112,33 @@ class LobbyFragment : Fragment() {
      */
     private fun setListeners() {
         binding.addPlayerButton.setOnClickListener {
-            launchPlayerDetailsFragment(-1)
+            launchFragment(PlayerDetailsFragment.newInstance(-1))
         }
 
         binding.startGameButton.setOnClickListener {
-            //TODO: Start game
+            launchFragment(GameFragment.newInstance())
         }
     }
 
     /**
-     * Set's correct ActionBar options/apperance, via [setSupportActionBar]
+     * Set's correct ActionBar options/apperance, via [setLobbyActionBar]
      */
     override fun onResume() {
         super.onResume()
-        setSupportActionBar()
+        setLobbyActionBar()
     }
 
     /**
-     * Saves state of [gameModel], via [GameViewModel.saveState]
+     * Saves state of [gameViewModel], via [GameViewModel.saveState]
      */
     override fun onStop() {
         super.onStop()
-        gameModel.saveState()
+        gameViewModel.saveState()
     }
 
     /**
-     * Helper method for updating ui, dependent on current amount of players in [gameModel]
-     * @param players: updated list of players provided by [gameModel]
+     * Helper method for updating ui, dependent on current amount of players in [gameViewModel]
+     * @param players: updated list of players provided by [gameViewModel]
      */
     private fun updateUI(players: List<Player>) {
         if (players.isEmpty()) {
@@ -140,15 +154,11 @@ class LobbyFragment : Fragment() {
         }
     }
 
-    /**
-     * Helper method for launching a [PlayerDetailsFragment]
-     * @param playerIndex: the current index of a already existing player. Is negative if non-existent.
-     */
-    private fun launchPlayerDetailsFragment(playerIndex: Int) {
+    private fun launchFragment(fragment: Fragment) {
         val transaction = requireActivity().supportFragmentManager.beginTransaction()
         transaction.replace(
             R.id.fragment_container,
-            PlayerDetailsFragment.newInstance(playerIndex)
+            fragment
         )
         transaction.addToBackStack(null)
         transaction.commit()
@@ -204,7 +214,7 @@ class LobbyFragment : Fragment() {
             playerScore.text = getString(R.string.score, player.score.toString())
             playerCard.setCardBackgroundColor(
                 ContextCompat.getColor(
-                    context!!,
+                    requireContext(),
                     player.favouriteColor
                 )
             )
@@ -214,14 +224,14 @@ class LobbyFragment : Fragment() {
          * Opens [PlayerDetailsFragment] for editing [Player] object.
          */
         override fun onClick(p0: View?) {
-            launchPlayerDetailsFragment(adapterPosition)
+            launchFragment(PlayerDetailsFragment.newInstance(adapterPosition))
         }
 
         /**
          * Presents dialog with option of deleting [Player] object.
          */
         override fun onLongClick(p0: View?): Boolean {
-            MaterialAlertDialogBuilder(context!!)
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete player")
                 .setMessage(
                     "Are you sure you want to delete " + player.name + "?"
@@ -231,8 +241,8 @@ class LobbyFragment : Fragment() {
                 }
                 .setPositiveButton("Yes") { _, _ ->
                     //Remove player and update list
-                    gameModel.removePlayer(player)
-                    updateUI(gameModel.getPlayers())
+                    gameViewModel.removePlayer(player)
+                    updateUI(gameViewModel.getPlayers())
                 }
                 .show()
             return true

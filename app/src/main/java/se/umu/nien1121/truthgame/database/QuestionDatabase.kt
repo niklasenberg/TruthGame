@@ -9,7 +9,7 @@ import se.umu.nien1121.truthgame.model.Question
 @TypeConverters(QuestionTypeConverters::class)
 
 /**
- *
+ * Database superclass which specifies its DAO
  */
 abstract class QuestionDatabase : RoomDatabase() {
     abstract fun questionDao(): QuestionDao

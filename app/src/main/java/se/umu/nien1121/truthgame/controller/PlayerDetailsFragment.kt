@@ -8,22 +8,19 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import se.umu.nien1121.truthgame.R
 import se.umu.nien1121.truthgame.databinding.FragmentPlayerDetailsBinding
 import se.umu.nien1121.truthgame.hideKeyboard
 import se.umu.nien1121.truthgame.model.GameViewModel
 import se.umu.nien1121.truthgame.model.Player
 import se.umu.nien1121.truthgame.setPicture
+import se.umu.nien1121.truthgame.setSupportActionBar
 import java.io.File
 import java.text.DateFormat.getDateInstance
 
@@ -32,21 +29,33 @@ import java.text.DateFormat.getDateInstance
 private const val PLAYER_INDEX = "se.umu.nien1121.playerIndex"
 private const val IMAGE_URI = "se.umu.nien1121.imageUri"
 
+/**
+ * Fragment which handles creating and updating [Player] objects
+ */
 class PlayerDetailsFragment : Fragment() {
 
     /**
      * Shared ViewModel owned by [MainActivity]
      */
-    private val gameModel: GameViewModel by activityViewModels()
+    private val gameViewModel: GameViewModel by activityViewModels()
 
     /**
-     * Determines current [se.umu.nien1121.truthgame.model.Player] object, or whether player does not exist
+     * Determines current [Player] object, or whether player does not exist
      */
     private var playerIndex = -1
 
     //Player photo and input validation
-    private lateinit var photoUri: Uri
+    private lateinit var imageUri: Uri
     private var hasPhoto = false
+    private val photoLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            when {
+                it.resultCode != RESULT_OK -> print("Something went wrong")
+                it.data != null -> {
+                    hasPhoto = setPicture(binding.imageviewPlayer, imageUri, requireContext())
+                }
+            }
+        }
 
     //ViewBinding
     private var _binding: FragmentPlayerDetailsBinding? = null
@@ -54,17 +63,20 @@ class PlayerDetailsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            Log.d("BUNDLE", "bundle exists")
-            photoUri = savedInstanceState.getParcelable(IMAGE_URI)!!
+
+        //Should saved state exists, a URI has already been created
+        imageUri = if (savedInstanceState != null) {
+            //Read existing URI
+            savedInstanceState.getParcelable(IMAGE_URI)!!
         } else {
-            Log.d("BUNDLE", "does not exist")
+            //Create new file and URI to store player picture in
             val photoFile = File.createTempFile(
                 "JPEG_" + getDateInstance(),
                 ".jpg",
                 requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
             )
-            photoUri = FileProvider.getUriForFile(
+            //Use FileProvider to get URI
+            FileProvider.getUriForFile(
                 requireContext(),
                 requireContext().packageName + ".fileprovider",
                 photoFile
@@ -83,34 +95,36 @@ class PlayerDetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setActionBar()
         setViews()
 
         //Get playerIndex from Bundle arguments, load current details if player exists
         playerIndex = arguments?.getInt(PLAYER_INDEX)!!
         if (playerIndex >= 0) {
             getPlayerDetails(playerIndex)
+            setSupportActionBar("Update", requireActivity(), viewLifecycleOwner)
+        } else {
+            setSupportActionBar("Add player", requireActivity(), viewLifecycleOwner)
         }
     }
 
     /**
-     * Retrieves and loads existing [Player] details from [gameModel].
+     * Retrieves and loads existing [Player] details from [gameViewModel].
      * @param playerIndex: index of [Player] to be displayed
      */
     private fun getPlayerDetails(playerIndex: Int) {
         //Get picture
-        photoUri = gameModel.getPlayerImage(playerIndex)
-        hasPhoto = setPicture(binding.imageviewPlayer, photoUri, requireContext())
+        imageUri = gameViewModel.getPlayer(playerIndex).imageUri
+        hasPhoto = setPicture(binding.imageviewPlayer, imageUri, requireContext())
 
         //Get name
         binding.textInputLayoutName.apply {
-            editText!!.setText(gameModel.getPlayerName(playerIndex))
+            editText!!.setText(gameViewModel.getPlayer(playerIndex).name)
             jumpDrawablesToCurrentState()
         }
 
         //Get color
         var colorButtonId = 0
-        when (gameModel.getPlayerColor(playerIndex)) {
+        when (gameViewModel.getPlayer(playerIndex).favouriteColor) {
             R.color.yellow_crayola -> colorButtonId = R.id.radio_yellow_crayola
             R.color.sandy_brown -> colorButtonId = R.id.radio_sandy_brown
             R.color.buff -> colorButtonId = R.id.radio_buff
@@ -129,6 +143,7 @@ class PlayerDetailsFragment : Fragment() {
      */
     private fun setViews() {
         binding.imageviewPlayer.apply {
+            //Setup Camera Intent via ACTION_IMAGE_CAPTURE
             val packageManager: PackageManager = requireActivity().packageManager
             val captureImageIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(
@@ -136,15 +151,20 @@ class PlayerDetailsFragment : Fragment() {
                 PackageManager.MATCH_DEFAULT_ONLY
             )
 
+            //Disables button if camera activity has not been completed
             if (resolvedActivity == null) {
                 isEnabled = true
             }
 
             setOnClickListener {
-                captureImageIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                //Launch intent with URI to place image file in
+                captureImageIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
                 photoLauncher.launch(captureImageIntent)
             }
         }
+
+        //Set picture and input validate via hasPhoto
+        hasPhoto = setPicture(binding.imageviewPlayer, imageUri, requireContext())
 
         //Default check one of the radiobuttons
         binding.radioGroupColor.check(R.id.radio_yellow_crayola)
@@ -155,16 +175,6 @@ class PlayerDetailsFragment : Fragment() {
             savePlayer()
         }
     }
-
-    private val photoLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            when {
-                it.resultCode != RESULT_OK -> print("Something went wrong")
-                it.data != null -> {
-                    hasPhoto = setPicture(binding.imageviewPlayer, photoUri, requireContext())
-                }
-            }
-        }
 
     /**
      * Helper method for input validating and saving/updating [Player] details.
@@ -187,9 +197,9 @@ class PlayerDetailsFragment : Fragment() {
             }
 
             //Save player via ViewModel
-            gameModel.savePlayer(
+            gameViewModel.savePlayer(
                 playerIndex,
-                photoUri,
+                imageUri,
                 binding.textInputLayoutName.editText!!.text.toString(),
                 color
             )
@@ -199,41 +209,12 @@ class PlayerDetailsFragment : Fragment() {
         }
     }
 
-
-    /**
-     * Helper method for configuring the ActionBar, setting the correct title and navigational options
-     */
-    private fun setActionBar() {
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
-                // Clear current options, set title and add correct menu options
-                menu.clear()
-                (requireActivity() as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(
-                    true
-                )
-                (requireActivity() as AppCompatActivity).supportActionBar!!.setTitle(
-                    if (playerIndex < 0) R.string.add_player_text else R.string.update_player_text
-                )
-            }
-
-            override fun onMenuItemSelected(item: MenuItem): Boolean {
-                // Handle the menu selection
-                when (item.itemId) {
-                    android.R.id.home -> {
-                        hideKeyboard()
-                        requireActivity().supportFragmentManager.popBackStack()
-                    }
-                }
-                return true
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        Log.d("BUNDLE", "onSaveInstanceState")
-        outState.putParcelable(IMAGE_URI, photoUri)
+        //Save already created URI
+        outState.putParcelable(IMAGE_URI, imageUri)
     }
+
 
     companion object {
         /**

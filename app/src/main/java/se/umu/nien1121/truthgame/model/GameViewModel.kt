@@ -1,32 +1,42 @@
 package se.umu.nien1121.truthgame.model
 
 import android.net.Uri
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import java.util.*
 
 //Constants
 private const val PLAYER_LIST_KEY = "se.umu.nien1121.playerList"
+private const val CURRENT_PLAYER_KEY = "se.umu.nien1121.currentPlayer"
 
 /**
- * Shared [ViewModel], owned by [se.umu.nien1121.truthgame.MainActivity]. Handles registered [Player] objects.
+ * Shared [ViewModel], owned by [se.umu.nien1121.truthgame.controller.MainActivity]. Handles registered [Player] objects.
  * @param handle: SavedStateHandle used by constructor to reset prior state upon destruction of ViewModel
  */
 class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
     /**
-     * List of [Player] objects
+     * List of registered [Player] objects
      */
     private var playerList = mutableListOf<Player>()
 
-    //Load players from handle, if any
-    init {
-        playerList = handle[PLAYER_LIST_KEY] ?: mutableListOf()
+    /**
+     * Index of player who has
+     */
+    private var currentPlayerIndex = 0
+
+    //Repository
+    private var questionRepository: QuestionRepository = QuestionRepository.get()
+
+    //LiveData to be observed
+    val questionListLiveData = questionRepository.getQuestions()
+    private val randomQuestionLiveData = MutableLiveData<UUID>()
+    var questionLiveData: LiveData<Question> = Transformations.switchMap(randomQuestionLiveData) {
+        questionRepository.getRandomQuestion()
     }
 
-    /**
-     * Removes all [Player] objects from game.
-     */
-    fun clear() {
-        playerList.clear()
+    //Load players from savedstatehandle, if any
+    init {
+        playerList = handle[PLAYER_LIST_KEY] ?: mutableListOf()
+        currentPlayerIndex = handle[CURRENT_PLAYER_KEY] ?: 0
     }
 
     /**
@@ -79,21 +89,50 @@ class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
         player.favouriteColor = favouriteColor
     }
 
+    fun addQuestion(question: Question) {
+        questionRepository.addQuestion(question)
+    }
+
+    fun deleteQuestion(question: Question) {
+        questionRepository.deleteQuestion(question)
+    }
+
+    fun nextRound(answer: Boolean) {
+        if (answer) {
+            getCurrentPlayer().score += 1
+        }
+
+        currentPlayerIndex += 1
+
+        if (currentPlayerIndex == playerList.size) {
+            currentPlayerIndex = 0
+        }
+
+        getNewQuestion()
+    }
+
+    fun clear() {
+        playerList.clear()
+    }
+
     //Getters
     fun getPlayers(): List<Player> {
         return playerList
     }
 
-    fun getPlayerImage(i: Int): Uri {
-        return playerList[i].imageUri
+    fun getPlayer(i: Int): Player {
+        return playerList[i]
     }
 
-    fun getPlayerName(i: Int): String {
-        return playerList[i].name
+    fun getCurrentPlayer(): Player {
+        return playerList[currentPlayerIndex]
     }
 
-    fun getPlayerColor(i: Int): Int {
-        return playerList[i].favouriteColor
+    /**
+     * Mutates LiveData which triggers refresh from observers of [questionLiveData]
+     */
+    fun getNewQuestion() {
+        randomQuestionLiveData.value = UUID.randomUUID()
     }
 
     /**
@@ -101,5 +140,6 @@ class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
      */
     fun saveState() {
         handle[PLAYER_LIST_KEY] = playerList
+        handle[CURRENT_PLAYER_KEY] = currentPlayerIndex
     }
 }

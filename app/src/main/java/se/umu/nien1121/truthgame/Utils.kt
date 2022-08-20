@@ -5,10 +5,18 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 
 
 /**
@@ -42,6 +50,7 @@ fun Context.hideKeyboard(view: View) {
  * @param imageView: ImageView in which to display given image URI
  * @param imageUri: URI for image to be displayed
  * @param context: Context object needed for fetching correct file paths
+ * @return true/false if image has been set successfully
  */
 fun setPicture(imageView: ImageView, imageUri: Uri, context: Context): Boolean {
     //Get filepath
@@ -49,7 +58,7 @@ fun setPicture(imageView: ImageView, imageUri: Uri, context: Context): Boolean {
         .toString() + "/" + imageUri.lastPathSegment
 
     //Get custom factory options
-    var options = BitmapFactory.Options().apply {
+    val options = BitmapFactory.Options().apply {
         //Preserves memory
         inJustDecodeBounds = true
     }
@@ -64,4 +73,32 @@ fun setPicture(imageView: ImageView, imageUri: Uri, context: Context): Boolean {
         return true
     }
     return false
+}
+
+/**
+ * Utility method for configuring the ActionBar, setting the correct title and navigational options
+ * @param title: The title to be set in the ActionBar
+ * @param activity: The activity which owns the ActionBar
+ * @param lifecycleOwner: owner for lifecycles of views within fragment (viewLifecycleOwner)
+ */
+fun setSupportActionBar(title: String, activity: FragmentActivity, lifecycleOwner: LifecycleOwner) {
+    activity.addMenuProvider(object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
+            // Clear current options, set title and add correct menu options
+            menu.clear()
+            (activity as AppCompatActivity).supportActionBar!!.setDisplayHomeAsUpEnabled(
+                true
+            )
+            activity.supportActionBar!!.title = title
+        }
+
+        override fun onMenuItemSelected(item: MenuItem): Boolean {
+            when (item.itemId) {
+                android.R.id.home -> {
+                    activity.supportFragmentManager.popBackStack()
+                }
+            }
+            return true
+        }
+    }, lifecycleOwner, Lifecycle.State.RESUMED)
 }

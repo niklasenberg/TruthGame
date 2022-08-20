@@ -2,11 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/my_questions"
+        android:icon="@drawable/ic_my_questions"
+        android:title="@string/my_questions"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/clear_lobby"
         android:title="@string/clear_lobby"
         app:showAsAction="never" />
     <item
-        android:id="@+id/add_question"
-        android:title="@string/add_question"
+        android:id="@+id/show_rules"
+        android:title="@string/show_rules"
         app:showAsAction="never" />
 </menu>

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    android:id="@+id/player_card"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/player_card"
     android:layout_width="match_parent"
     android:layout_height="90dp"
     android:layout_margin="10dp"
@@ -18,10 +17,9 @@
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imageview_player"
             android:layout_width="45dp"
-            android:background="@color/black"
             android:layout_height="80dp"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
-            />
+            android:background="@color/black"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent" />
 
         <TextView
             android:id="@+id/player_textView"
@@ -35,12 +33,12 @@
     </LinearLayout>
 
     <TextView
-        android:padding="5dp"
         android:id="@+id/player_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
+        android:padding="5dp"
         android:text="@string/score"
-        android:textSize="20sp"/>
+        android:textSize="20sp" />
 
 </androidx.cardview.widget.CardView>

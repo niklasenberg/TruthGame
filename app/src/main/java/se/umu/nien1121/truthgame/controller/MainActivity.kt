@@ -7,10 +7,11 @@ import se.umu.nien1121.truthgame.databinding.ActivityMainBinding
 
 /**
  * Primary [AppCompatActivity] for hosting fragments. It's lifecycle determines creation/destruction
- * of [GameViewModel].
+ * of [se.umu.nien1121.truthgame.model.GameViewModel].
  */
 class MainActivity : AppCompatActivity() {
 
+    //ViewBinding
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,7 +20,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //Init ActionBar to be used in fragments
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
 
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (currentFragment == null) {
@@ -30,10 +31,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Disables Activity from finishing on press of back button when backstack is empty
+     * thus preserving state of ViewModel owned by activity
+     */
     override fun onBackPressed() {
-        if(supportFragmentManager.backStackEntryCount > 0){
+        //If not in lobby, go back
+        if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()
         } else {
+            //Else move task
             moveTaskToBack(true)
         }
     }
