@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import se.umu.nien1121.truthgame.databinding.FragmentAddQuestionDialogBinding
-import se.umu.nien1121.truthgame.model.GameViewModel
 import se.umu.nien1121.truthgame.model.Question
+import se.umu.nien1121.truthgame.model.QuestionViewModel
 
 //Constants
 private const val QUESTION_TEXT_KEY = "se.umu.nien1121.questionText"
@@ -19,7 +19,7 @@ private const val QUESTION_TEXT_KEY = "se.umu.nien1121.questionText"
 class AddQuestionDialogFragment : DialogFragment() {
 
     //Shared ViewModel
-    private val gameViewModel: GameViewModel by activityViewModels()
+    private val questionViewModel: QuestionViewModel by activityViewModels()
 
     //ViewBinding
     private var _binding: FragmentAddQuestionDialogBinding? = null
@@ -62,7 +62,7 @@ class AddQuestionDialogFragment : DialogFragment() {
             //Input validate and create question
             if (text.isNotEmpty()) {
                 val question = Question(content = text)
-                gameViewModel.addQuestion(question)
+                questionViewModel.addQuestion(question)
                 dismiss()
             } else {
                 binding.textInputLayoutQuestion.error = "Enter question"

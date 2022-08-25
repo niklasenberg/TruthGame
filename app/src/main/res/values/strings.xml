@@ -20,7 +20,26 @@
     <string name="add_question">Add question</string>
     <string name="welcome">Welcome!</string>
     <string name="large_text">
-        "This game is about telling the truth.\n\n"
+        "What's the point of TruthGame? Well, a question you've registered is going to be asked to one of the players. The player then has"
+        "to answer this question in a way that the other player's find truthful and/or introspective. If they do, they'll give the answer a thumbs up."
+        "The player then gets one score point, and the game continues in the same way."
+        "Since this game is about telling the truth, it's important that that everyone who is playing is comfortable with the questions given to them and don't feel pressured into answering"
+        "anything they don't want to. Remember that a question can always be skipped by shaking the phone. Also,"
+        "it is not recommended to play this game in combination with alcohol. TruthGame is supposed to be"
+        "a way for you and your friends to get to know each other more, and is meant for calm and safe social environments. \n\n"
+
+        "So how do you start playing? First things first, you need to add some questions that you want to ask your friends."
+        "This is done by navigating to "My questions" in the top right corner of your screen. It's a good idea to add a few questions"
+        "beforehand to playing the game with your friends, as then you'll have time to come up with some really good ones."
+        "These questions are saved between games so if you're having a dull moment on your commute, you could always try"
+        "coming up with some more. \n\n"
+
+        "When you've got some questions you need to register players. This is done by pressing the plus icon from the main screen."
+        "You need to be at least two people in order to play TruthGame, as playing it by yourself probably wouldn't be fun at all."
+        "When this is done, you can get to playing by starting the game from the main screen. \n\n"
+
+        "And remember, even though this game keeps track of your score the goal is never to win. Listen to your friends answers,"
+        "discuss and hopefully at some point put down the phone and stop playing. Good luck!"
 
     </string>
     <string name="show_rules">Show rules</string>

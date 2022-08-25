@@ -2,16 +2,12 @@ package se.umu.nien1121.truthgame.controller
 
 import android.os.Bundle
 import android.view.*
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import se.umu.nien1121.truthgame.R
 import se.umu.nien1121.truthgame.databinding.FragmentRulesBinding
 import se.umu.nien1121.truthgame.setSupportActionBar
 
 /**
- * Fragment whcih presents the rules of TruthGame. Presented in both [MainActivity] and [WelcomeActivity].
+ * Fragment which presents the rules of TruthGame. Presented in both [MainActivity] and [WelcomeActivity].
  */
 class RulesFragment : Fragment() {
 

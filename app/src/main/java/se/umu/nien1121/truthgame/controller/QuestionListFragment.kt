@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import se.umu.nien1121.truthgame.R
 import se.umu.nien1121.truthgame.databinding.FragmentQuestionListBinding
-import se.umu.nien1121.truthgame.model.GameViewModel
 import se.umu.nien1121.truthgame.model.Question
+import se.umu.nien1121.truthgame.model.QuestionViewModel
 import se.umu.nien1121.truthgame.setSupportActionBar
 
 /**
@@ -22,7 +22,7 @@ class QuestionListFragment : Fragment() {
     /**
      * Shared ViewModel owned by [MainActivity]
      */
-    private val gameViewModel: GameViewModel by activityViewModels()
+    private val questionViewModel: QuestionViewModel by activityViewModels()
 
     //Adapter for recyclerview
     private var adapter: QuestionAdapter? = QuestionAdapter(emptyList())
@@ -61,7 +61,7 @@ class QuestionListFragment : Fragment() {
         }
 
         //Observe database livedata and update question list
-        gameViewModel.questionListLiveData.observe(
+        questionViewModel.questionListLiveData.observe(
             viewLifecycleOwner
         ) { questions ->
             questions?.let {
@@ -144,7 +144,7 @@ class QuestionListFragment : Fragment() {
                 }
                 .setPositiveButton("Yes") { _, _ ->
                     //Remove player and update list
-                    gameViewModel.deleteQuestion(question)
+                    questionViewModel.deleteQuestion(question)
                 }
                 .show()
             return true

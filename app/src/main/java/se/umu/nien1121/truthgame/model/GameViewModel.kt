@@ -19,7 +19,7 @@ class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
     private var playerList = mutableListOf<Player>()
 
     /**
-     * Index of player who has
+     * Index of player with current turn
      */
     private var currentPlayerIndex = 0
 
@@ -27,7 +27,6 @@ class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
     private var questionRepository: QuestionRepository = QuestionRepository.get()
 
     //LiveData to be observed
-    val questionListLiveData = questionRepository.getQuestions()
     private val randomQuestionLiveData = MutableLiveData<UUID>()
     var questionLiveData: LiveData<Question> = Transformations.switchMap(randomQuestionLiveData) {
         questionRepository.getRandomQuestion()
@@ -89,25 +88,23 @@ class GameViewModel(private val handle: SavedStateHandle) : ViewModel() {
         player.favouriteColor = favouriteColor
     }
 
-    fun addQuestion(question: Question) {
-        questionRepository.addQuestion(question)
-    }
-
-    fun deleteQuestion(question: Question) {
-        questionRepository.deleteQuestion(question)
-    }
-
+    /**
+     * Helper method for advancing game state, noting score and supplying new player/question.
+     * @param answer: Whether the answer was found to be true or not
+     */
     fun nextRound(answer: Boolean) {
+        //If true, increase player score
         if (answer) {
             getCurrentPlayer().score += 1
         }
 
+        //Go to next player, loop if at end of list
         currentPlayerIndex += 1
-
         if (currentPlayerIndex == playerList.size) {
             currentPlayerIndex = 0
         }
 
+        //Mutate LiveData and supply new question
         getNewQuestion()
     }
 
