@@ -18,7 +18,10 @@ The application utilizes:
 
 ### Demo
 
-Uploading TruthGame demo.mov…
+
+
+https://user-images.githubusercontent.com/81677013/187195922-04d94b03-b3b8-4376-b8aa-9098dc589bc3.mov
+
 
 ### Developed for
 
